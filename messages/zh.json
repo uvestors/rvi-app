@@ -1,0 +1,140 @@
+{
+  "HomePage": {
+    "description": "推动真实世界资产上链与国际标准建设，连接澳大利亚高质量资产与亚洲增长最快的资本市场",
+    "nav": {
+      "about": "关于 RVI",
+      "why": "RWA 价值",
+      "core": "核心业务",
+      "partners": "生态合作",
+      "contact": "联系我们"
+    },
+    "hero": {
+      "badge": "连接澳大利亚 & 亚洲",
+      "title_line1": "推进真实世界资产",
+      "title_line2": "上链与国际标准建设",
+      "description": "Real Value Institute (RVI) — 致力于连接澳大利亚高质量资产与亚洲增长最快的资本市场，打造中立、可信的全球 RWA 生态系统。",
+      "btn_learn": "了解更多",
+      "btn_partner": "成为合作伙伴",
+      "globe_caption": "全球信任网络"
+    },
+    "about": {
+      "title": "关于 RVI",
+      "p1_segment1": "RVI 是一家位于澳大利亚的",
+      "p1_highlight": "非营利机构",
+      "p1_segment2": "，致力于推动真实世界资产（RWA）的研究与行业标准。",
+      "p2": "我们的核心使命是建立一个中立、公信力强的行业生态平台，促进澳大利亚优质资产与亚洲资本之间的跨境合作。",
+      "quote": "“真实价值值得被看见，并以最透明、最高标准的方式被全球接触。”",
+      "badges": {
+        "standard": "建立行业标准",
+        "ecosystem": "跨境生态协同",
+        "compliance": "合规监管桥梁",
+        "research": "深度研究教育"
+      },
+      "card_title": "我们的定位",
+      "card_points": [
+        "RWA 研究与标准制定的先行者",
+        "连接监管者、资产方与技术方的枢纽",
+        "支持合规、透明、可持续的资产数字化"
+      ]
+    },
+    "why": {
+      "section_title": "为什么是现在？",
+      "section_desc": "全球金融正进入“真实价值回归”的时代。RVI 站在 RWA、澳洲资产与亚洲资本的交汇点。",
+      "cards": {
+        "rwa": {
+          "title": "Why RWA?",
+          "desc": "RWA 不是技术革命，而是信任革命。",
+          "points": [
+            "让优质资产全球可见",
+            "真实、可审计、可监管",
+            "提高透明度，降低风险"
+          ]
+        },
+        "au": {
+          "title": "Why Australia?",
+          "desc": "全球最适合做“合规 RWA”的国家之一。",
+          "points": [
+            "强监管结构 (ASIC, APRA)",
+            "世界级资产 (能源, 矿产, 农业)",
+            "真实、稳定、长期、透明"
+          ]
+        },
+        "asia": {
+          "title": "Why Asia?",
+          "desc": "增长最快的资本市场与 RWA 金融中心。",
+          "points": [
+            "香港 & 新加坡作为监管前沿",
+            "资本体量大，速度快",
+            "对创新型真实资产需求旺"
+          ]
+        }
+      }
+    },
+    "mission": {
+      "badge": "我们的工作",
+      "title": "构建可信 RWA 生态",
+      "desc": "RVI 承担行业标准共建者、监管沟通桥梁、资产与资本链接者的多重角色。",
+      "cards": [
+        {
+          "title": "研究与标准",
+          "desc": "真实世界资产研究、分类、合规框架分析及澳洲与亚太监管比较研究。"
+        },
+        {
+          "title": "生态协作",
+          "desc": "联合资产方、资本方、技术方，建立跨境协作联盟 (RWFF)。"
+        },
+        {
+          "title": "澳亚跨境桥梁",
+          "desc": "帮助机构理解澳洲资产，协助亚洲资本理解监管风控，推动合规项目落地。"
+        },
+        {
+          "title": "教育与知识库",
+          "desc": "发布行业白皮书，与大学合作课程，普及 RWA 知识体系。"
+        }
+      ]
+    },
+    "founder": {
+      "title": "创始人寄语",
+      "quote": "“澳大利亚拥有世界顶级的真实资产，但需要一座可信的桥梁连接全球资本。RVI 不是做投机，不追噱头，我们专注长期价值、监管对齐与产业升级。希望与行业一起，共同打造一个健康、透明、以真实价值为核心的全球 RWA 生态。”",
+      "name": "Henry Xu",
+      "role": "Founder, Real Value Institute",
+      "subrole": "RWA Strategy & Ecosystem Builder"
+    },
+    "partners": {
+      "title": "全球合作与生态",
+      "tags": [
+        "大学 & 研究机构",
+        "法律事务所",
+        "监管机构",
+        "金融机构",
+        "能源/基建产业",
+        "Tokenisation 技术方"
+      ],
+      "cta_title": "加入 RWA 生态系统",
+      "cta_desc": "无论你是资产方、技术方、律所、投行还是研究机构，RVI 诚邀你共同建设未来的真实世界资产体系。",
+      "btn_join": "加入 RWA 生态联盟 (RWFF)"
+    },
+    "footer": {
+      "desc": "推进真实世界资产上链与国际标准建设。",
+      "contact_title": "联系方式",
+      "links_title": "链接",
+      "links": ["关于我们", "研究报告", "RWFF 联盟", "隐私政策"],
+      "rights": "保留所有权利。",
+      "tagline": "为信任与透明而设计。"
+    }
+  },
+  "Navigation": {
+    "about": "关于我们",
+    "why": "为什么选择RWA",
+    "core": "我们的业务",
+    "partners": "合作伙伴",
+    "contact": "联系我们"
+  },
+  "LocaleSwitcher": {
+    "label": "切换语言",
+    "locale": "{locale, select, zh {简体中文} en {English} other {English}}"
+  },
+  "LocaleLayout": {
+    "title": "RVI应用"
+  }
+}
