@@ -3,6 +3,8 @@ const ColorfulButton = ({
   variant = "primary",
   className = "",
   ...props
+}: BaseComponentProps & {
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
 }) => {
   const baseStyle =
     "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 cursor-pointer";

@@ -6,6 +6,7 @@ import React from "react";
 
 const BuildEcosystem = async () => {
   const t = await getTranslations("HomePage");
+  const cards = t.raw("mission.cards") as Record<string, string>[];
 
   return (
     <React.Fragment>
@@ -25,7 +26,7 @@ const BuildEcosystem = async () => {
           </FadeInSection>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(await t).raw("mission.cards").map((item, index) => {
+            {cards.map((item, index) => {
               const icons = [
                 <BookOpen key="bookOpen" className="w-8 h-8" />,
                 <Users key="users" className="w-8 h-8" />,

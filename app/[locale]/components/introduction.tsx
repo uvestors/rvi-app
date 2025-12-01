@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 const Introduction = async () => {
   const t = await getTranslations("HomePage");
+  const cardPoints = t.raw("about.card_points") as string[];
 
   return (
     <section
@@ -57,7 +58,7 @@ const Introduction = async () => {
                 {t("about.card_title")}
               </h3>
               <ul className="space-y-3">
-                {t.raw("about.card_points").map((point, i) => (
+                {cardPoints.map((point, i) => (
                   <li key={i} className="flex items-start">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 mr-3 shrink-0"></div>
                     <span className="text-slate-400">{point}</span>

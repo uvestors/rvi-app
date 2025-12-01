@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import Navbar from "@/components/navbar";
 import "./style.css";
 import Footer from "@/layout/footer";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 

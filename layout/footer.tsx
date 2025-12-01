@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 const Footer = async () => {
   const t = await getTranslations("HomePage");
+  const links = t.raw("footer.links") as string[];
 
   return (
     <footer
@@ -72,7 +73,7 @@ const Footer = async () => {
               {t("footer.links_title")}
             </h4>
             <ul className="space-y-2 text-slate-500">
-              {t.raw("footer.links").map((link, i) => (
+              {links.map((link, i) => (
                 <li key={i}>
                   <a href="#" className="hover:text-blue-400">
                     {link}

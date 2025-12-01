@@ -1,18 +1,13 @@
 import Card from "@/components/card";
 import FadeInSection from "@/components/fadeInSection";
-import { get } from "http";
-import {
-  ArrowRight,
-  Landmark,
-  ShieldCheck,
-  TrendingUp,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Landmark, TrendingUp, Zap } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import React from "react";
 
 const WhyNow = async () => {
   const t = await getTranslations("HomePage");
+  const rwaPoints = t.raw("why.cards.rwa.points") as string[];
+  const auPoints = t.raw("why.cards.au.points") as string[];
+  const asiaPoints = t.raw("why.cards.asia.points") as string[];
 
   return (
     <section id="why-rwa" className="py-24 relative z-10">
@@ -39,7 +34,7 @@ const WhyNow = async () => {
                 {t("why.cards.rwa.desc")}
               </p>
               <ul className="space-y-2 text-sm text-slate-500">
-                {t.raw("why.cards.rwa.points").map((p, i) => (
+                {rwaPoints.map((p, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <ArrowRight size={14} className="text-blue-500 shrink-0" />{" "}
                     {p}
@@ -60,7 +55,7 @@ const WhyNow = async () => {
                 {t("why.cards.au.desc")}
               </p>
               <ul className="space-y-2 text-sm text-slate-500">
-                {t.raw("why.cards.au.points").map((p, i) => (
+                {auPoints.map((p, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <ArrowRight size={14} className="text-green-500 shrink-0" />{" "}
                     {p}
@@ -81,7 +76,7 @@ const WhyNow = async () => {
                 {t("why.cards.asia.desc")}
               </p>
               <ul className="space-y-2 text-sm text-slate-500">
-                {t.raw("why.cards.asia.points").map((p, i) => (
+                {asiaPoints.map((p, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <ArrowRight
                       size={14}

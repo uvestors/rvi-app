@@ -12,7 +12,6 @@ function LandingPage() {
         className="absolute top-0 left-0 w-full h-[50px] pointer-events-none bg-transparent z-0"
         aria-hidden="true"
       />
-
       <Background />
       <HeroFeature />
       <Introduction />

@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 
 const Partners = async () => {
   const t = await getTranslations("HomePage");
+  const partnerTags = t.raw("partners.tags") as string[];
+
   return (
     <section
       id="partners"
@@ -16,7 +18,7 @@ const Partners = async () => {
           </h2>
 
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-16 opacity-70">
-            {t.raw("partners.tags").map((partner) => (
+            {partnerTags.map((partner) => (
               <span
                 key={partner}
                 className="px-6 py-3 rounded-full border border-slate-700 text-slate-300 text-sm md:text-base font-medium"

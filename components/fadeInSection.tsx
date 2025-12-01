@@ -2,7 +2,13 @@
 
 import React from "react";
 
-const FadeInSection = ({ children, className = "", delay = 0 }) => {
+const FadeInSection = ({
+  children,
+  className = "",
+  delay = 0,
+}: BaseComponentProps & {
+  delay?: number;
+}) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const domRef = React.useRef(null);
 
