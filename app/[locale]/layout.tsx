@@ -52,9 +52,9 @@ export default async function LocaleLayout({
         )}
       >
         <NextIntlClientProvider>
-          <Navbar />
+          {/* <Navbar /> */}
           {children}
-          <Footer />
+          {/* <Footer /> */}
         </NextIntlClientProvider>
       </body>
     </html>
