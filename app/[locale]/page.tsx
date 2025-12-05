@@ -18,24 +18,161 @@ import {
   Factory,
   Cpu,
   Landmark,
-  Handshake,
-  Network,
   Briefcase,
+  Handshake, // ✅ Added Handshake to imports to fix ReferenceError
 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import Navbar from "@/components/navbar";
-import Link from "next/link";
+import LocaleSwitcher from "@/components/localeSwitcher";
 
-// --- Particle Background Component (Visual Reference to PDF) ---
+// --- Navbar Component (Internal Implementation) ---
+const Navbar = ({ className }: { className?: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+
+  const navLinks = [
+    { name: "About", href: "#about" },
+    { name: "Rationale", href: "#why-rwa" },
+    { name: "Services", href: "#services" },
+    { name: "Ecosystem", href: "#contact" },
+  ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = navLinks
+        .map((link) => {
+          const id = link.href.substring(1);
+          const element = document.getElementById(id);
+          if (element) {
+            return {
+              id: link.href,
+              top: element.offsetTop - 150,
+              bottom: element.offsetTop + element.offsetHeight - 150,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean);
+
+      const scrollPosition = window.scrollY;
+
+      const current = sections.find(
+        (section) =>
+          section &&
+          scrollPosition >= section.top &&
+          scrollPosition < section.bottom
+      );
+
+      if (current) {
+        setActiveSection(current.id);
+      } else if (window.scrollY < 100) {
+        setActiveSection("");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${className} border-b border-slate-100`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          <div className="flex-shrink-0 flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md shadow-sky-200">
+              R
+            </div>
+            <span className="font-bold text-2xl tracking-tight text-slate-800">
+              RVI
+            </span>
+          </div>
+
+          <div className="hidden md:flex items-center space-x-2">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.href;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                    isActive
+                      ? "text-sky-700 bg-sky-50 shadow-sm ring-1 ring-sky-100"
+                      : "text-slate-600 hover:text-sky-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {link.name}
+                </a>
+              );
+            })}
+            <LocaleSwitcher />
+            <div className="ml-4">
+              <a
+                href="#contact"
+                className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-full font-semibold transition-all shadow-lg shadow-sky-200 hover:shadow-sky-300 transform hover:-translate-y-0.5 active:scale-95"
+              >
+                Partner With Us
+              </a>
+            </div>
+          </div>
+
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-slate-600 hover:text-sky-600 focus:outline-none"
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="md:hidden bg-white/95 backdrop-blur-md border-b border-slate-100 absolute w-full shadow-xl">
+          <div className="px-4 pt-2 pb-6 space-y-2">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.href;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                    isActive
+                      ? "text-sky-700 bg-sky-50"
+                      : "text-slate-600 hover:text-sky-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {link.name}
+                </a>
+              );
+            })}
+            <a
+              href="#contact"
+              onClick={() => setIsOpen(false)}
+              className="block w-full text-center mt-4 px-5 py-3 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-lg font-bold shadow-md"
+            >
+              Partner With Us
+            </a>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+// --- Particle Background Component ---
 const ParticleNetwork = () => {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    let animationFrameId;
-    let particles = [];
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let particles: Particle[] = [];
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -43,55 +180,68 @@ const ParticleNetwork = () => {
     };
 
     class Particle {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.size = Math.random() * 2 + 1;
-        // Colors from PDF: Pink/Magenta and Cyan/Blue
-        this.color =
-          Math.random() > 0.5 ? "rgba(0, 188, 212, " : "rgba(255, 77, 136, ";
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.size = Math.random() * 3 + 1;
+
+        const colors = [
+          "rgba(14, 165, 233, ", // Sky Blue
+          "rgba(236, 72, 153, ", // Pink
+          "rgba(99, 102, 241, ", // Indigo
+          "rgba(203, 213, 225, ", // Slate (Base)
+        ];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
       }
 
       update() {
         this.x += this.vx;
         this.y += this.vy;
 
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
       }
 
       draw() {
+        if (!ctx) return;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color + "0.8)";
+        ctx.fillStyle = this.color + "0.4)";
         ctx.fill();
       }
     }
 
     const init = () => {
       particles = [];
-      const numberOfParticles = Math.min(window.innerWidth / 15, 100); // Responsive count
+      const numberOfParticles = Math.min(window.innerWidth / 20, 60);
       for (let i = 0; i < numberOfParticles; i++) {
         particles.push(new Particle());
       }
     };
 
     const animate = () => {
+      if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 150) {
+          if (distance < 120) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(150, 150, 255, ${0.15 - distance / 1500})`;
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = `rgba(203, 213, 225, ${0.2 - distance / 1200})`;
+            ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
@@ -125,16 +275,14 @@ const ParticleNetwork = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none z-0 opacity-60"
+      className="absolute inset-0 pointer-events-none z-0"
     />
   );
 };
 
 // --- Main App Component ---
 export default function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const t = useTranslations("HomePage");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -144,81 +292,126 @@ export default function App() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const text = {
+    hero: {
+      instituteName: "Real Value Institute",
+      title1: "The Future of",
+      title2: "Value-Backed Finance",
+      subtitle: "Bridging Real-World Assets between Australia and Asia",
+      desc1:
+        "We connect premium Australian assets with dynamic Asian capital markets through rigorous research, standards development, and ecosystem coordination.",
+      desc2: "Research • Standards • Ecosystem",
+      btnLearn: "Our Mission",
+      btnPartner: "Partner With Us",
+    },
+    mission: {
+      title: "Our Mission",
+      desc: "To build a trusted, compliant, and efficient bridge for the global real-world asset economy.",
+      servesTitle: "We serve the industry by:",
+      list: [
+        "Advancing regulatory frameworks for RWA",
+        "Developing technical and compliance standards",
+        "Facilitating cross-border pilot programs",
+        "Educating market participants and regulators",
+      ],
+      values: [
+        { title: "Trust", desc: "Building the foundation of digital finance" },
+        { title: "Clarity", desc: "Providing clear standards and research" },
+        { title: "Impact", desc: "Unlocking real economic value" },
+      ],
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white font-sans selection:bg-pink-500 selection:text-white">
-      <Navbar />
+    <div className="min-h-screen bg-white text-slate-800 font-sans selection:bg-sky-100 selection:text-sky-900">
+      <Navbar
+        className={
+          scrolled
+            ? "bg-white/95 backdrop-blur shadow-sm"
+            : "bg-white/50 backdrop-blur-sm"
+        }
+      />
 
       {/* SECTION 01: HERO */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-b from-blue-900/20 to-[#0B0F19] z-0"></div>
+        {/* 背景：非常淡的彩色光晕，代替之前的深色背景 */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-200/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-200/20 rounded-full blur-[100px] pointer-events-none"></div>
+
         <ParticleNetwork />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-          <div className="inline-block px-4 py-1 mb-6 rounded-full border border-cyan-500/30 bg-cyan-900/10 backdrop-blur-sm">
-            <span className="text-cyan-400 text-xs md:text-sm font-semibold tracking-wider uppercase">
-              {t("hero.instituteName")}
+          <div className="inline-block px-4 py-1.5 mb-6 rounded-full border border-sky-200 bg-sky-50 backdrop-blur-sm">
+            <span className="text-sky-600 text-xs md:text-sm font-bold tracking-wider uppercase">
+              {text.hero.instituteName}
             </span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-            {t("hero.title1")} <br />
-            <span className="bg-clip-text text-transparent bg-linear-to-r from-cyan-400 via-blue-400 to-pink-500">
-              {t("hero.title2")}
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight text-slate-900">
+            {text.hero.title1} <br />
+            {/* 保留多彩渐变，但调整为更清透的颜色 */}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-blue-600 to-pink-500">
+              {text.hero.title2}
             </span>
           </h1>
-          <h2 className="text-lg md:text-2xl font-medium text-gray-200 mb-3 tracking-wide">
-            {t("hero.subtitle")}
+          <h2 className="text-lg md:text-2xl font-medium text-slate-600 mb-4 tracking-wide">
+            {text.hero.subtitle}
           </h2>
-          <p className="text-base md:text-lg text-gray-400 mb-6 font-light max-w-2xl mx-auto">
-            {t("hero.desc1")}
-          </p>
-          <p className="mt-2 text-sm md:text-base text-gray-500 font-light tracking-wide uppercase">
-            {t("hero.desc2")}
+          <p className="text-base md:text-lg text-slate-500 mb-8 font-light max-w-2xl mx-auto leading-relaxed">
+            {text.hero.desc1}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            {/* Primary Button: 天蓝色渐变 */}
             <a
               href="#about"
-              className="px-8 py-4 bg-white text-[#0B0F19] rounded-lg font-bold hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-gradient-to-r from-sky-400 to-blue-600 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-sky-200 hover:scale-105 transition-all flex items-center justify-center gap-2"
             >
-              {t("hero.btnLearn")} <ArrowRight size={18} />
+              {text.hero.btnLearn} <ArrowRight size={18} />
             </a>
-            <Link
+            {/* Secondary Button */}
+            <a
               href="#contact"
-              className="px-8 py-4 border border-white/20 hover:border-cyan-500/50 hover:bg-white/5 rounded-lg font-semibold text-white transition-all"
+              className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-sky-400 hover:text-sky-600 hover:bg-sky-50 transition-all"
             >
-              {t("hero.btnPartner")}
-            </Link>
+              {text.hero.btnPartner}
+            </a>
           </div>
         </div>
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-gray-500 rounded-full flex justify-center pt-2">
-            <div className="w-1 h-2 bg-gray-500 rounded-full"></div>
+          <div className="w-6 h-10 border-2 border-slate-300 rounded-full flex justify-center pt-2">
+            <div className="w-1 h-2 bg-slate-400 rounded-full"></div>
           </div>
         </div>
       </section>
 
       {/* SECTION 02: ABOUT */}
-      <section id="about" className="py-24 bg-[#0B0F19] relative">
+      <section
+        id="about"
+        className="py-24 bg-white relative border-t border-slate-100"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">About RVI</h2>
-              <h3 className="text-xl text-cyan-400 font-medium mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
+                About RVI
+              </h2>
+              <h3 className="text-xl text-sky-600 font-medium mb-6">
                 A Non-Profit Institute Dedicated to RWA Research & Ecosystem
                 Development
               </h3>
-              <div className="h-1 w-20 bg-gradient-to-r from-pink-500 to-cyan-500 mb-8"></div>
-              <p className="text-lg text-gray-300 leading-relaxed mb-6">
+              {/* 彩色装饰线 */}
+              <div className="h-1.5 w-20 bg-gradient-to-r from-sky-400 to-pink-400 mb-8 rounded-full"></div>
+              <p className="text-lg text-slate-600 leading-relaxed mb-6">
                 RVI is an Australia-based non-profit organisation focused on
                 advancing the future of digital finance through rigorous
                 research and global collaboration.
               </p>
 
-              <div className="mt-8 p-6 bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-xl">
-                <p className="text-gray-300 italic font-medium text-lg">
+              <div className="mt-8 p-6 bg-slate-50 border-l-4 border-sky-500 rounded-r-xl">
+                <p className="text-slate-700 italic font-medium text-lg">
                   "We believe:{" "}
-                  <span className="text-white">
+                  <span className="text-slate-900 font-bold">
                     Real value should be seen, trusted, and accessible globally.
                   </span>
                   "
@@ -226,55 +419,59 @@ export default function App() {
               </div>
             </div>
             <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-2xl opacity-20 blur-xl"></div>
-              <div className="relative bg-[#0F1422] p-8 rounded-2xl border border-white/10 shadow-2xl">
-                <div className="grid grid-cols-1 gap-5">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 mt-1">
-                      <BookOpen size={20} />
+              <div className="absolute -inset-4 bg-gradient-to-r from-sky-200 to-pink-200 rounded-2xl opacity-40 blur-xl transform translate-y-4"></div>
+              <div className="relative bg-white p-8 rounded-2xl border border-slate-100 shadow-xl">
+                <div className="grid grid-cols-1 gap-6">
+                  {/* 恢复图标的彩色背景，但更淡雅 */}
+                  {[
+                    {
+                      icon: BookOpen,
+                      title: "Research",
+                      desc: "Advancing research on Real-World Assets (RWA).",
+                      color: "text-blue-600",
+                      bg: "bg-blue-50",
+                    },
+                    {
+                      icon: Globe,
+                      title: "Standards",
+                      desc: "Building cross-border industry standards.",
+                      color: "text-pink-600",
+                      bg: "bg-pink-50",
+                    },
+                    {
+                      icon: Users,
+                      title: "Ecosystem",
+                      desc: "Coordinating an ecosystem of institutions and regulators.",
+                      color: "text-sky-600",
+                      bg: "bg-sky-50",
+                    },
+                    {
+                      icon: Shield,
+                      title: "Compliance",
+                      desc: "Supporting compliant, transparent asset tokenization.",
+                      color: "text-emerald-600",
+                      bg: "bg-emerald-50",
+                    },
+                  ].map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-4 hover:bg-slate-50 p-2 rounded-lg transition-colors"
+                    >
+                      <div
+                        className={`p-3 ${item.bg} ${item.color} rounded-lg mt-1 shadow-sm`}
+                      >
+                        <item.icon size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-900">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                          {item.desc}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-white">Research</h3>
-                      <p className="text-sm text-gray-400">
-                        Advancing research on Real-World Assets (RWA).
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-pink-500/10 rounded-lg text-pink-400 mt-1">
-                      <Globe size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white">Standards</h3>
-                      <p className="text-sm text-gray-400">
-                        Building cross-border industry standards.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400 mt-1">
-                      <Users size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white">Ecosystem</h3>
-                      <p className="text-sm text-gray-400">
-                        Coordinating an ecosystem of institutions, regulators,
-                        asset owners, and technology providers.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-green-500/10 rounded-lg text-green-400 mt-1">
-                      <Shield size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white">Compliance</h3>
-                      <p className="text-sm text-gray-400">
-                        Supporting compliant, transparent and sustainable asset
-                        tokenization.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -285,210 +482,154 @@ export default function App() {
       {/* SECTIONS 03-05: THE WHY TRILOGY */}
       <section
         id="why-rwa"
-        className="py-24 bg-[#0F1422] border-y border-white/5"
+        className="py-24 bg-slate-50 border-y border-slate-200 relative overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold">
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900">
               The Strategic Rationale
             </h2>
-            <p className="mt-4 text-gray-400 max-w-2xl mx-auto text-lg">
+            <p className="mt-4 text-slate-600 max-w-2xl mx-auto text-lg">
               Unlocking global value by connecting Australia's premium assets
               with Asia's dynamic capital through a trusted RWA framework.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {/* Why RWA */}
-            <div className="flex flex-col h-full bg-[#0B0F19] p-8 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all hover:shadow-lg hover:shadow-cyan-900/20 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-opacity opacity-50 group-hover:opacity-100"></div>
+            {[
+              {
+                id: "rwa",
+                icon: Shield,
+                title: "Why RWA?",
+                subtitle:
+                  "The world is entering the era of “value-backed digital finance.”",
+                bullets: [
+                  "Global accessibility for high-quality assets",
+                  "Transparent, auditable investment models",
+                  "Cross-border capital efficiency",
+                  "Lower risk and higher trust",
+                ],
+                footer:
+                  "RWA is not a technology revolution — it is a trust revolution.",
+                theme: "sky",
+                accent: "text-sky-600",
+                bg: "bg-sky-50",
+              },
+              {
+                id: "aus",
+                icon: MapPin,
+                title: "Why Australia?",
+                subtitle:
+                  "Australia offers one of the world’s strongest environments for regulated RWA.",
+                bullets: [
+                  "Renewable energy (solar, wind)",
+                  "Natural gas & Minerals",
+                  "Grid & infrastructure",
+                  "Real estate & Agriculture",
+                ],
+                footer:
+                  "Stable, transparent, auditable, well-regulated — ideal for tokenisation.",
+                theme: "pink",
+                accent: "text-pink-600",
+                bg: "bg-pink-50",
+              },
+              {
+                id: "asia",
+                icon: TrendingUp,
+                title: "Why Asia?",
+                subtitle:
+                  "Asia is the fastest-growing capital region globally.",
+                bullets: [
+                  "Large scale, fast moving capital",
+                  "Demand-driven markets",
+                  "Hong Kong & Singapore RWA hubs",
+                  "Global financial gateways",
+                ],
+                footer:
+                  "Australia supplies assets. Asia supplies capital. RVI builds the bridge.",
+                theme: "indigo",
+                accent: "text-indigo-600",
+                bg: "bg-indigo-50",
+              },
+            ].map((card, i) => (
+              <div
+                key={i}
+                className="flex flex-col h-full bg-white p-8 rounded-2xl border border-slate-200 hover:border-sky-300 transition-all hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group"
+              >
+                {/* 恢复彩色背景球，但淡化 */}
+                <div
+                  className={`absolute top-0 right-0 w-32 h-32 ${card.bg} rounded-full blur-3xl -mr-10 -mt-10 transition-opacity opacity-60 group-hover:opacity-100`}
+                ></div>
 
-              <div className="w-12 h-12 bg-cyan-900/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 flex-shrink-0">
-                <Shield size={28} />
-              </div>
-              <h3 className="text-3xl font-bold mb-4 text-white">Why RWA?</h3>
-              {/* Reduced font size for intro text */}
-              <p className="text-cyan-400 text-sm font-medium mb-6 italic opacity-80">
-                The world is entering the era of “value-backed digital finance.”
-              </p>
-
-              <div className="flex-grow space-y-4 mb-8">
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
-                  RWA creates:
+                <div
+                  className={`w-12 h-12 ${card.bg} rounded-xl flex items-center justify-center mb-6 ${card.accent} flex-shrink-0 shadow-sm`}
+                >
+                  <card.icon size={28} />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-slate-900">
+                  {card.title}
+                </h3>
+                <p className={`${card.accent} text-sm font-medium mb-6 italic`}>
+                  {card.subtitle}
                 </p>
-                <ul className="space-y-3">
-                  {/* Reduced font size for list items */}
-                  {[
-                    "Global accessibility for high-quality assets",
-                    "Transparent, auditable, legally compliant investment models",
-                    "Cross-border capital efficiency",
-                    "Lower risk and higher trust through regulatory alignment",
-                  ].map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start text-gray-400 text-sm"
-                    >
-                      <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
 
-              <div className="mt-auto pt-6 border-t border-white/10">
-                <p className="text-white font-medium text-sm">
-                  RWA is not a technology revolution — it is a{" "}
-                  <span className="text-cyan-400">trust revolution</span>.
-                </p>
-              </div>
-            </div>
-
-            {/* Why Australia */}
-            <div className="flex flex-col h-full bg-[#0B0F19] p-8 rounded-2xl border border-white/5 hover:border-pink-500/30 transition-all hover:shadow-lg hover:shadow-pink-900/20 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-opacity opacity-50 group-hover:opacity-100"></div>
-
-              <div className="w-12 h-12 bg-pink-900/20 rounded-lg flex items-center justify-center mb-6 text-pink-400 flex-shrink-0">
-                <MapPin size={28} />
-              </div>
-              <h3 className="text-3xl font-bold mb-4 text-white">
-                Why Australia?
-              </h3>
-              <p className="text-pink-400 text-sm font-medium mb-6 italic opacity-80">
-                Australia offers one of the world’s strongest environments for
-                regulated RWA.
-              </p>
-
-              <div className="flex-grow space-y-4 mb-8">
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
-                  World-class real assets:
-                </p>
-                <ul className="space-y-2 grid grid-cols-1">
-                  {[
-                    "Renewable energy (solar, wind)",
-                    "Natural gas",
-                    "Grid & infrastructure",
-                    "Agriculture & livestock",
-                    "Minerals (gold, copper, lithium)",
-                    "Real estate",
-                    "Carbon & environmental assets",
-                    "Embedded network energy data",
-                  ].map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start text-gray-400 text-sm"
-                    >
-                      <span className="w-1.5 h-1.5 bg-pink-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mt-auto pt-6 border-t border-white/10">
-                <p className="text-white font-medium text-sm">
-                  These assets are:{" "}
-                  <span className="text-pink-400">
-                    Stable, transparent, auditable, well-regulated
-                  </span>{" "}
-                  — ideal for tokenisation.
-                </p>
-              </div>
-            </div>
-
-            {/* Why Asia */}
-            <div className="flex flex-col h-full bg-[#0B0F19] p-8 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all hover:shadow-lg hover:shadow-blue-900/20 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-opacity opacity-50 group-hover:opacity-100"></div>
-
-              <div className="w-12 h-12 bg-blue-900/20 rounded-lg flex items-center justify-center mb-6 text-blue-400 flex-shrink-0">
-                <TrendingUp size={28} />
-              </div>
-              <h3 className="text-3xl font-bold mb-4 text-white">Why Asia?</h3>
-              <p className="text-blue-400 text-sm font-medium mb-6 italic opacity-80">
-                Asia is the fastest-growing capital region globally.
-              </p>
-
-              <div className="flex-grow space-y-6 mb-8">
-                <div>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2">
-                    Asian capital is:
+                <div className="flex-grow space-y-4 mb-8">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                    Key Factors:
                   </p>
-                  <ul className="space-y-2">
-                    {[
-                      "Large in scale",
-                      "Fast moving",
-                      "Demand-driven",
-                      "Open to innovative investment products",
-                    ].map((item, i) => (
+                  <ul className="space-y-3">
+                    {card.bullets.map((item, idx) => (
                       <li
-                        key={i}
-                        className="flex items-start text-gray-400 text-sm"
+                        key={idx}
+                        className="flex items-start text-slate-600 text-sm"
                       >
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                        <span
+                          className={`w-1.5 h-1.5 ${card.bg
+                            .replace("bg-", "bg-")
+                            .replace(
+                              "50",
+                              "400"
+                            )} rounded-full mr-3 mt-1.5 flex-shrink-0`}
+                        ></span>
                         <span>{item}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2">
-                    Hong Kong & Singapore are:
+
+                <div className="mt-auto pt-6 border-t border-slate-100">
+                  <p className="text-slate-700 font-medium text-sm">
+                    {card.footer}
                   </p>
-                  <ul className="space-y-2">
-                    {[
-                      "RWA regulatory sandbox centers",
-                      "Asia’s digital asset issuance hubs",
-                      "Global tokenisation financial gateways",
-                    ].map((item, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start text-gray-400 text-sm"
-                      >
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
-
-              <div className="mt-auto pt-6 border-t border-white/10">
-                <p className="text-white font-medium text-sm">
-                  Australia supplies the assets. / Asia supplies the capital.{" "}
-                  <span className="text-blue-400 block mt-1">
-                    RVI builds the bridge.
-                  </span>
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* SECTION 06: MISSION */}
-      <section
-        id="mission"
-        className="py-20 relative overflow-hidden bg-[#0B0F19]"
-      >
-        {/* Background gradient splash */}
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-cyan-900/10 to-transparent pointer-events-none"></div>
-
+      <section id="mission" className="py-20 relative overflow-hidden bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-sm font-bold tracking-widest text-pink-500 uppercase mb-4">
-            {t("mission.title")}
+          <h2 className="text-sm font-bold tracking-widest text-sky-600 uppercase mb-4">
+            {text.mission.title}
           </h2>
-          <p className="text-3xl md:text-5xl font-bold leading-tight mb-12">
-            {t("mission.desc")}
+          <p className="text-3xl md:text-5xl font-bold leading-tight mb-12 text-slate-900">
+            {text.mission.desc}
           </p>
 
-          <div className="bg-[#0B0F19]/50 backdrop-blur-sm border border-white/5 rounded-2xl p-8 md:p-12">
-            <h3 className="text-xl font-semibold text-white mb-8">
-              {t("mission.servesTitle")}
+          <div className="bg-white border border-slate-100 rounded-2xl p-8 md:p-12 shadow-2xl shadow-slate-100">
+            <h3 className="text-xl font-semibold text-slate-800 mb-8">
+              {text.mission.servesTitle}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-left max-w-2xl mx-auto mb-10">
-              {(t.raw("mission.list") as any[]).map((item, index) => (
+              {text.mission.list.map((item, index) => (
                 <div key={index} className="flex items-start">
-                  <div className="mt-2 mr-3 flex-shrink-0 w-2 h-2 rounded-full bg-gradient-to-r from-cyan-400 to-pink-500" />
-                  <span className="text-gray-300 text-lg font-light">
+                  {/* 彩色对勾 */}
+                  <div className="mt-1 mr-3 flex-shrink-0 text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-pink-500 font-bold">
+                    ✓
+                  </div>
+                  <span className="text-slate-600 text-lg font-light">
                     {item}
                   </span>
                 </div>
@@ -496,16 +637,16 @@ export default function App() {
             </div>
 
             {/* VALUES SUB-SECTION */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-white/10">
-              {t.raw("mission.values").map((value, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-slate-100">
+              {text.mission.values.map((value, index) => (
                 <div
                   key={index}
-                  className="flex flex-col items-center text-center p-4 bg-white/5 rounded-xl"
+                  className="flex flex-col items-center text-center p-4 bg-slate-50 rounded-xl hover:bg-sky-50 transition-colors cursor-default group"
                 >
-                  <div className="text-cyan-400 font-bold text-xl mb-1">
+                  <div className="text-sky-600 font-bold text-xl mb-1 group-hover:scale-105 transition-transform">
                     {value.title}
                   </div>
-                  <div className="text-gray-400 text-sm">{value.desc}</div>
+                  <div className="text-slate-500 text-sm">{value.desc}</div>
                 </div>
               ))}
             </div>
@@ -513,106 +654,97 @@ export default function App() {
         </div>
       </section>
 
-      {/* SECTION 07: WHAT WE DO */}
-      <section id="services" className="py-24 bg-[#0F1422]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* SECTION 07: WHAT WE DO (居中优化版) */}
+      <section
+        id="services"
+        className="py-24 bg-slate-50 relative overflow-hidden"
+      >
+        {/* 背景装饰：极淡的几何图形 */}
+        <div className="absolute left-0 top-1/4 w-64 h-64 bg-sky-100/40 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold">What We Do</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
+              What We Do
+            </h2>
+            <p className="mt-4 text-slate-500">
+              Comprehensive services for the digital asset economy
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Block 1 */}
-            <div className="p-8 bg-[#0B0F19] border border-white/5 rounded-xl hover:bg-white/[0.02] transition-colors">
-              <div className="text-4xl font-bold text-white/10 mb-6">01</div>
-              <h3 className="text-xl font-bold text-white mb-4">
-                RWA Research & Standards Development
-              </h3>
-              <ul className="space-y-2">
-                {[
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                id: "01",
+                title: "RWA Research & Standards",
+                items: [
                   "Cross-border regulatory research",
                   "RWA classification frameworks",
-                  "Standardisation of asset authenticity & on-chain verification",
+                  "Standardisation of asset authenticity",
                   "White papers & policy discussions",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start text-gray-400 text-base"
-                  >
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Block 2 */}
-            <div className="p-8 bg-[#0B0F19] border border-white/5 rounded-xl hover:bg-white/[0.02] transition-colors">
-              <div className="text-4xl font-bold text-white/10 mb-6">02</div>
-              <h3 className="text-xl font-bold text-white mb-4">
-                Ecosystem Collaboration
-              </h3>
-              <ul className="space-y-2">
-                {[
+                ],
+              },
+              {
+                id: "02",
+                title: "Ecosystem Collaboration",
+                items: [
                   "Partner with institutions across the value chain",
-                  "Create the RWFF (Real World Finance Forum) alliance",
-                  "Connect regulated service providers, asset owners & capital partners",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start text-gray-400 text-base"
-                  >
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full mr-3 mt-2 shrink-0"></span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Block 3 */}
-            <div className="p-8 bg-[#0B0F19] border border-white/5 rounded-xl hover:bg-white/2 transition-colors">
-              <div className="text-4xl font-bold text-white/10 mb-6">03</div>
-              <h3 className="text-xl font-bold text-white mb-4">
-                Australia ↔ Asia Cross-Border Bridge
-              </h3>
-              <ul className="space-y-2">
-                {[
+                  "Create the RWFF alliance",
+                  "Connect regulated service providers & asset owners",
+                ],
+              },
+              {
+                id: "03",
+                title: "Australia ↔ Asia Bridge",
+                items: [
                   "Help Asian institutions understand Australian assets",
-                  "Help Australian industry understand RWA compliance frameworks",
-                  "Facilitate compliant issuance & asset tokenisation pilot programs",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start text-gray-400 text-base"
-                  >
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Block 4 */}
-            <div className="p-8 bg-[#0B0F19] border border-white/5 rounded-xl hover:bg-white/[0.02] transition-colors">
-              <div className="text-4xl font-bold text-white/10 mb-6">04</div>
-              <h3 className="text-xl font-bold text-white mb-4">
-                Education & Knowledge Hub
-              </h3>
-              <ul className="space-y-2">
-                {[
+                  "Help Australian industry understand RWA compliance",
+                  "Facilitate compliant issuance pilots",
+                ],
+              },
+              {
+                id: "04",
+                title: "Education & Knowledge Hub",
+                items: [
                   "Courses, workshops, industry panels",
                   "University collaboration",
                   "Research publications",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start text-gray-400 text-base"
-                  >
-                    <span className="w-1.5 h-1.5 bg-gray-600 rounded-full mr-3 mt-2 flex-shrink-0"></span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                ],
+              },
+            ].map((block, idx) => (
+              <div
+                key={idx}
+                className="relative p-8 bg-white rounded-2xl shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-300 group overflow-hidden hover:-translate-y-2 flex flex-col items-center text-center"
+              >
+                {/* 顶部装饰条 */}
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-sky-400 to-blue-600"></div>
+
+                {/* 背景大数字 - 移至右上角作为水印 */}
+                <div className="absolute -right-6 -top-8 text-9xl font-serif font-bold text-slate-50 group-hover:text-sky-50 transition-colors leading-none select-none z-0">
+                  {block.id}
+                </div>
+
+                <div className="relative z-10 pt-4 w-full">
+                  <h3 className="text-2xl font-bold text-slate-900 group-hover:text-sky-700 transition-colors mb-4">
+                    {block.title}
+                  </h3>
+
+                  {/* 中央装饰短线 */}
+                  <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6 group-hover:bg-sky-400 transition-all duration-500 group-hover:w-20"></div>
+
+                  <ul className="space-y-3">
+                    {block.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="text-slate-600 text-base group-hover:text-slate-800 transition-colors"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -620,78 +752,91 @@ export default function App() {
       {/* COMBINED SECTION: GLOBAL ECOSYSTEM */}
       <section
         id="contact"
-        className="py-24 bg-[#0B0F19] relative border-t border-white/5"
+        className="py-24 bg-white relative border-t border-slate-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
               Global Ecosystem & Partnerships
             </h2>
-            <p className="text-gray-400 text-lg">
+            <p className="text-slate-500 text-lg">
               Connecting the leaders of the real-world asset revolution.
             </p>
           </div>
 
-          {/* PART 1: PARTNERS GRID */}
+          {/* PART 1: PARTNERS GRID (恢复彩色图标) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
             {[
               {
                 icon: GraduationCap,
                 title: "Academic & Research",
                 text: "Universities & research bodies",
+                color: "text-blue-500",
+                bg: "bg-blue-50",
               },
               {
                 icon: Scale,
                 title: "Legal & Regulatory",
                 text: "Legal & regulatory experts",
+                color: "text-red-500",
+                bg: "bg-red-50",
               },
               {
                 icon: Factory,
                 title: "Asset Owners",
-                text: "Energy, infrastructure, agriculture & mining",
+                text: "Energy, infrastructure, agriculture",
+                color: "text-amber-500",
+                bg: "bg-amber-50",
               },
               {
                 icon: Cpu,
                 title: "Technology Partners",
-                text: "Web3 & tokenisation technology companies",
+                text: "Web3 & tokenisation tech",
+                color: "text-purple-500",
+                bg: "bg-purple-50",
               },
               {
                 icon: Landmark,
                 title: "Capital Partners",
-                text: "Family offices & institutional capital",
+                text: "Family offices & institutions",
+                color: "text-emerald-500",
+                bg: "bg-emerald-50",
               },
               {
                 icon: Globe,
                 title: "RWA Hubs",
-                text: "Hong Kong / Singapore RWA hubs",
+                text: "Hong Kong / Singapore Hubs",
+                color: "text-sky-500",
+                bg: "bg-sky-50",
               },
             ].map((item, index) => (
-              <div key={index} className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-pink-500/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative bg-[#0F1422]/80 backdrop-blur-md p-8 rounded-xl border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center text-center h-full">
-                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/5 group-hover:border-cyan-500/30 shadow-[0_0_15px_rgba(0,255,255,0.1)] group-hover:shadow-[0_0_25px_rgba(0,255,255,0.3)]">
+              <div key={index} className="group relative">
+                <div className="relative bg-white p-8 rounded-xl border border-slate-200 hover:border-sky-300 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex flex-col items-center text-center h-full">
+                  <div
+                    className={`w-16 h-16 ${item.bg} rounded-2xl flex items-center justify-center ${item.color} mb-6 border border-slate-50 shadow-sm group-hover:scale-110 transition-transform duration-300`}
+                  >
                     <item.icon size={32} />
                   </div>
-                  <h4 className="text-white font-bold text-lg mb-2">
+                  <h4 className="text-slate-900 font-bold text-lg mb-2">
                     {item.title}
                   </h4>
-                  <p className="text-gray-400 text-sm">{item.text}</p>
+                  <p className="text-slate-500 text-sm">{item.text}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* PART 3: JOIN THE ECOSYSTEM (ROLES + FORM) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
+          {/* PART 3: JOIN THE ECOSYSTEM */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24 items-center">
             {/* Left Column: Roles */}
             <div>
               <div className="mb-8">
-                <h3 className="text-3xl font-bold text-white mb-4">
+                <h3 className="text-3xl font-bold text-slate-900 mb-4">
                   Who Should Join?
                 </h3>
-                <div className="h-1 w-20 bg-gradient-to-r from-pink-500 to-cyan-500 mb-6"></div>
-                <p className="text-gray-300 text-lg leading-relaxed">
+                <div className="h-1.5 w-20 bg-gradient-to-r from-sky-400 to-blue-500 mb-6 rounded-full"></div>
+                <p className="text-slate-600 text-lg leading-relaxed">
                   Whether you are building the future of finance or managing
                   world-class assets, RVI invites you to shape the future of
                   real-world asset tokenisation.
@@ -710,10 +855,13 @@ export default function App() {
                 ].map((role, index) => (
                   <div
                     key={index}
-                    className="flex items-center p-4 bg-[#0F1422] rounded-lg border border-white/5 hover:border-cyan-500/30 transition-colors"
+                    className="flex items-center p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-sky-300 transition-colors group"
                   >
-                    <role.icon className="text-cyan-400 mr-3" size={20} />
-                    <span className="text-gray-300 font-medium">
+                    <role.icon
+                      className="text-sky-500 mr-3 group-hover:scale-110 transition-transform"
+                      size={20}
+                    />
+                    <span className="text-slate-700 font-medium">
                       {role.text}
                     </span>
                   </div>
@@ -723,12 +871,11 @@ export default function App() {
 
             {/* Right Column: Form */}
             <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20"></div>
-              <div className="relative bg-[#0B0F19] p-8 md:p-10 rounded-2xl border border-white/10 shadow-2xl h-full flex flex-col justify-center">
-                <h3 className="text-2xl font-bold text-white mb-6">
+              <div className="relative bg-white p-8 md:p-10 rounded-2xl border border-slate-200 shadow-2xl h-full flex flex-col justify-center">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">
                   Start the Conversation
                 </h3>
-                <p className="text-gray-400 mb-8">
+                <p className="text-slate-500 mb-8">
                   Join our network of industry leaders and pioneers.
                 </p>
 
@@ -737,21 +884,21 @@ export default function App() {
                   onSubmit={(e) => e.preventDefault()}
                 >
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 uppercase mb-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
                       Email Address
                     </label>
                     <input
                       type="email"
                       placeholder="Enter your email"
-                      className="w-full bg-[#0F1422] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-400"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 uppercase mb-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">
                       Organization Type
                     </label>
                     <div className="relative">
-                      <select className="w-full bg-[#0F1422] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors appearance-none cursor-pointer">
+                      <select className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all appearance-none cursor-pointer">
                         <option>Select your role...</option>
                         <option>Asset Owner</option>
                         <option>Financial Institution</option>
@@ -759,7 +906,7 @@ export default function App() {
                         <option>Regulator</option>
                         <option>Other</option>
                       </select>
-                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-500">
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-slate-500">
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -776,7 +923,7 @@ export default function App() {
                       </div>
                     </div>
                   </div>
-                  <button className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-4 rounded-lg transition-all shadow-lg shadow-cyan-900/20 mt-2 flex items-center justify-center gap-2 group">
+                  <button className="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-4 rounded-lg transition-all shadow-lg shadow-sky-200 mt-2 flex items-center justify-center gap-2 group">
                     Join the RWA Ecosystem{" "}
                     <ArrowRight
                       size={18}
@@ -790,23 +937,28 @@ export default function App() {
         </div>
       </section>
 
-      {/* SECTION 08: FOUNDER MESSAGE (Moved to bottom) */}
-      <section className="py-24 bg-gradient-to-r from-[#0B0F19] to-[#0D121E] relative border-y border-white/5">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* SECTION 08: FOUNDER MESSAGE - 改为浅色 */}
+      <section className="py-24 bg-sky-50 relative overflow-hidden">
+        {/* 背景光晕：稍微深一点的天蓝色 */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             {/* Left: Founder Info */}
             <div className="w-full md:w-1/3 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="w-24 h-24 bg-gradient-to-br from-cyan-400 to-pink-500 rounded-full p-1 mb-6">
-                <div className="w-full h-full bg-[#0B0F19] rounded-full flex items-center justify-center">
-                  <Activity className="text-white w-10 h-10" />
+              <div className="w-24 h-24 bg-gradient-to-br from-sky-400 to-pink-500 p-0.5 rounded-full mb-6 shadow-md">
+                <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                  <Activity className="text-sky-600 w-10 h-10" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">Henry Xu</h3>
-              <p className="text-cyan-400 font-medium mb-4">
+              <h3 className="text-2xl font-bold text-slate-900 mb-1">
+                Henry Xu
+              </h3>
+              <p className="text-sky-600 font-medium mb-4">
                 Founder, Real Value Institute
               </p>
-              <div className="inline-block px-3 py-1 bg-white/5 rounded-full border border-white/10">
-                <p className="text-xs text-gray-400 tracking-wide uppercase">
+              <div className="inline-block px-3 py-1 bg-white rounded-full border border-sky-100 shadow-sm">
+                <p className="text-xs text-slate-500 tracking-wide uppercase">
                   RWA Strategy & Ecosystem Builder
                 </p>
               </div>
@@ -814,17 +966,17 @@ export default function App() {
 
             {/* Right: Message Content */}
             <div className="w-full md:w-2/3 relative">
-              <div className="absolute -top-6 -left-6 text-6xl text-white/5 font-serif">
+              <div className="absolute -top-6 -left-6 text-6xl text-sky-200 font-serif">
                 “
               </div>
-              <blockquote className="text-lg md:text-xl text-gray-300 leading-relaxed space-y-6 relative z-10">
+              <blockquote className="text-lg md:text-xl text-slate-600 leading-relaxed space-y-6 relative z-10">
                 <p>
                   "Australia holds some of the world’s most stable, transparent
                   and high-quality assets, and they deserve global visibility."
                 </p>
                 <p>
                   "Our mission is{" "}
-                  <span className="text-white font-semibold">
+                  <span className="text-slate-900 font-semibold">
                     not speculation
                   </span>{" "}
                   but long-term, standards-based, regulatory-aligned industry
@@ -832,7 +984,7 @@ export default function App() {
                 </p>
                 <p>
                   "RVI is here to help build a{" "}
-                  <span className="text-cyan-400">
+                  <span className="text-sky-600 font-semibold">
                     healthier, more transparent and trusted
                   </span>{" "}
                   global RWA ecosystem."
@@ -843,15 +995,15 @@ export default function App() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-[#05080F] pt-12 pb-12 border-t border-white/5">
+      {/* FOOTER - 改为浅色 */}
+      <footer className="bg-white pt-12 pb-12 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             <div className="space-y-4">
-              <h4 className="text-xl font-bold text-white">
+              <h4 className="text-xl font-bold text-slate-900">
                 Real Value Institute
               </h4>
-              <div className="flex items-start gap-3 text-gray-400 text-sm">
+              <div className="flex items-start gap-3 text-slate-500 text-sm">
                 <MapPin
                   className="text-pink-500 mt-0.5 flex-shrink-0"
                   size={16}
@@ -862,22 +1014,22 @@ export default function App() {
                   180 George Street, Sydney NSW 2000, Australia
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-gray-400 text-sm">
-                <Mail className="text-cyan-500 flex-shrink-0" size={16} />
+              <div className="flex items-center gap-3 text-slate-500 text-sm">
+                <Mail className="text-sky-500 flex-shrink-0" size={16} />
                 <a
                   href="mailto:contact@rvi-australia.org"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-sky-600 transition-colors"
                 >
                   contact@rvi-australia.org
                 </a>
               </div>
-              <div className="flex items-center gap-3 text-gray-400 text-sm">
-                <Globe className="text-blue-500 flex-shrink-0" size={16} />
+              <div className="flex items-center gap-3 text-slate-500 text-sm">
+                <Globe className="text-indigo-500 flex-shrink-0" size={16} />
                 <a
                   href="https://rvi-australia.org"
                   target="_blank"
                   rel="noreferrer"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-sky-600 transition-colors"
                 >
                   rvi-australia.org
                 </a>
@@ -886,10 +1038,10 @@ export default function App() {
 
             <div className="flex flex-col md:items-end gap-6">
               <div className="flex gap-4">
-                {/* Social Icons - Using lucide-react icons for consistency */}
+                {/* Social Icons - 浅色背景 */}
                 <a
                   href="#"
-                  className="p-2 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-gray-400"
+                  className="p-2 bg-slate-50 border border-slate-200 rounded-full hover:bg-sky-500 hover:border-sky-500 hover:text-white transition-all text-slate-500"
                   aria-label="LinkedIn"
                 >
                   <svg
@@ -910,7 +1062,7 @@ export default function App() {
                 </a>
                 <a
                   href="#"
-                  className="p-2 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-gray-400"
+                  className="p-2 bg-slate-50 border border-slate-200 rounded-full hover:bg-sky-500 hover:border-sky-500 hover:text-white transition-all text-slate-500"
                   aria-label="Twitter"
                 >
                   <svg
@@ -927,57 +1079,16 @@ export default function App() {
                     <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-12.7 12.5S.2 5.3 7.8 4.5c2.1-.1 3.2.4 3.2.4l-1.9 1.9c-3 3.8 2.5 8.5 6.2 6.1l2-2s1.5.5 1.5 2c1.5-1.5 2.5-3.5 2.5-3.5z" />
                   </svg>
                 </a>
-                <a
-                  href="#"
-                  className="p-2 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-gray-400"
-                  aria-label="YouTube"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
-                    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
-                  </svg>
-                </a>
-                <a
-                  href="#"
-                  className="p-2 bg-white/5 rounded-full hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-gray-400"
-                  aria-label="Instagram"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                  </svg>
-                </a>
               </div>
-              <div className="flex gap-6 text-gray-500 text-xs md:text-sm">
-                <a href="#" className="hover:text-white transition-colors">
+              <div className="flex gap-6 text-slate-500 text-xs md:text-sm">
+                <a href="#" className="hover:text-sky-600 transition-colors">
                   Privacy Policy
                 </a>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="#" className="hover:text-sky-600 transition-colors">
                   Terms of Service
                 </a>
               </div>
-              <div className="text-gray-600 text-xs">
+              <div className="text-slate-400 text-xs">
                 © {new Date().getFullYear()} Real Value Institute. All rights
                 reserved.
               </div>
