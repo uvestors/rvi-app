@@ -295,11 +295,11 @@ export default function App() {
   const text = {
     hero: {
       instituteName: "Real Value Institute",
-      title1: "The Future of",
-      title2: "Value-Backed Finance",
-      subtitle: "Bridging Real-World Assets between Australia and Asia",
-      desc1:
-        "We connect premium Australian assets with dynamic Asian capital markets through rigorous research, standards development, and ecosystem coordination.",
+      title1: "Advancing Real-World",
+      title2: "AssetTokenisation & Global Standards",
+      subtitle:
+        "A neutral, non-profit institute dedicated to shaping the future of RWA.",
+      desc1: "Building Trust, Standards & Collaboration for Real-World Assets",
       desc2: "Research • Standards • Ecosystem",
       btnLearn: "Our Mission",
       btnPartner: "Partner With Us",
@@ -938,15 +938,12 @@ export default function App() {
       </section>
 
       {/* SECTION 08: FOUNDER MESSAGE - 改为浅色 */}
-      <section className="py-24 bg-sky-50 relative overflow-hidden">
-        {/* 背景光晕：稍微深一点的天蓝色 */}
+      {/* <section className="py-24 bg-sky-50 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] pointer-events-none"></div>
-
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row gap-12 items-center">
-            {/* Left: Founder Info */}
             <div className="w-full md:w-1/3 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="w-24 h-24 bg-gradient-to-br from-sky-400 to-pink-500 p-0.5 rounded-full mb-6 shadow-md">
+              <div className="w-24 h-24 bg-linear-to-br from-sky-400 to-pink-500 p-0.5 rounded-full mb-6 shadow-md">
                 <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
                   <Activity className="text-sky-600 w-10 h-10" />
                 </div>
@@ -964,7 +961,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right: Message Content */}
             <div className="w-full md:w-2/3 relative">
               <div className="absolute -top-6 -left-6 text-6xl text-sky-200 font-serif">
                 “
@@ -993,10 +989,10 @@ export default function App() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FOOTER - 改为浅色 */}
-      <footer className="bg-white pt-12 pb-12 border-t border-slate-200">
+      <footer className="bg-slate-50 pt-12 pb-12 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
             <div className="space-y-4">
@@ -1004,10 +1000,7 @@ export default function App() {
                 Real Value Institute
               </h4>
               <div className="flex items-start gap-3 text-slate-500 text-sm">
-                <MapPin
-                  className="text-pink-500 mt-0.5 flex-shrink-0"
-                  size={16}
-                />
+                <MapPin className="text-pink-500 mt-0.5 shrink-0" size={16} />
                 <span>
                   Level 23, Salesforce Tower
                   <br />
