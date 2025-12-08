@@ -22,6 +22,7 @@ import {
   Handshake, // ✅ Added Handshake to imports to fix ReferenceError
 } from "lucide-react";
 import LocaleSwitcher from "@/components/localeSwitcher";
+import Image from "next/image";
 
 // --- Navbar Component (Internal Implementation) ---
 const Navbar = ({ className }: { className?: string }) => {
@@ -78,14 +79,7 @@ const Navbar = ({ className }: { className?: string }) => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          <div className="flex-shrink-0 flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md shadow-sky-200">
-              R
-            </div>
-            <span className="font-bold text-2xl tracking-tight text-slate-800">
-              RVI
-            </span>
-          </div>
+          <Image src="/logo.jpg" width={80} height={40} alt="logo" />
 
           <div className="hidden md:flex items-center space-x-2">
             {navLinks.map((link) => {
