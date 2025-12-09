@@ -19,7 +19,7 @@ import {
   Cpu,
   Landmark,
   Briefcase,
-  Handshake, // ✅ Added Handshake to imports to fix ReferenceError
+  Handshake,
 } from "lucide-react";
 import LocaleSwitcher from "@/components/localeSwitcher";
 import Image from "next/image";
@@ -289,10 +289,17 @@ export default function App() {
   const text = {
     hero: {
       instituteName: "Real Value Institute",
-      title1: "Advancing Real-World",
-      title2: "AssetTokenisation & Global Standards",
-      subtitle:
-        "A neutral, non-profit institute dedicated to shaping the future of RWA.",
+      // Updated Title 1: Moved "Asset" to the first line
+      title1: "Advancing Real-World Asset",
+      // Updated Title 2: "Tokenisation" starts the second line
+      title2: "Tokenisation & Global Standards",
+      // Updated Subtitle: Used JSX to force a line break on mobile only
+      subtitle: (
+        <>
+          A neutral, non-profit institute <br className="block sm:hidden" />{" "}
+          dedicated to shaping the future of RWA.
+        </>
+      ),
       desc1: "Building Trust, Standards & Collaboration for Real-World Assets",
       desc2: "Research • Standards • Ecosystem",
       btnLearn: "Our Mission",
@@ -328,7 +335,7 @@ export default function App() {
 
       {/* SECTION 01: HERO */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* 背景：非常淡的彩色光晕，代替之前的深色背景 */}
+        {/* Background Gradients */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-200/20 rounded-full blur-[100px] pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-200/20 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -340,28 +347,29 @@ export default function App() {
               {text.hero.instituteName}
             </span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight text-slate-900">
-            {text.hero.title1} <br />
-            {/* 保留多彩渐变，但调整为更清透的颜色 */}
+          {/* UPDATED H1 Styles:
+            - text-3xl (mobile) -> text-5xl (tablet) -> text-7xl (desktop)
+            - This prevents the word breaking on mobile.
+          */}
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight text-slate-900">
+            {text.hero.title1}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 via-blue-600 to-pink-500">
               {text.hero.title2}
             </span>
           </h1>
-          <h2 className="text-lg md:text-2xl font-medium text-slate-600 mb-4 tracking-wide">
+          <h2 className="text-base md:text-2xl font-medium text-slate-600 mb-4 tracking-wide">
             {text.hero.subtitle}
           </h2>
-          <p className="text-base md:text-lg text-slate-500 mb-8 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xs md:text-base text-slate-500 mb-8 font-light max-w-2xl mx-auto leading-relaxed px-4">
             {text.hero.desc1}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            {/* Primary Button: 天蓝色渐变 */}
             <a
               href="#about"
               className="px-8 py-4 bg-gradient-to-r from-sky-400 to-blue-600 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-sky-200 hover:scale-105 transition-all flex items-center justify-center gap-2"
             >
               {text.hero.btnLearn} <ArrowRight size={18} />
             </a>
-            {/* Secondary Button */}
             <a
               href="#contact"
               className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-sky-400 hover:text-sky-600 hover:bg-sky-50 transition-all"
@@ -394,7 +402,6 @@ export default function App() {
                 A Non-Profit Institute Dedicated to RWA Research & Ecosystem
                 Development
               </h3>
-              {/* 彩色装饰线 */}
               <div className="h-1.5 w-20 bg-gradient-to-r from-sky-400 to-pink-400 mb-8 rounded-full"></div>
               <p className="text-lg text-slate-600 leading-relaxed mb-6">
                 RVI is an Australia-based non-profit organisation focused on
@@ -416,7 +423,6 @@ export default function App() {
               <div className="absolute -inset-4 bg-gradient-to-r from-sky-200 to-pink-200 rounded-2xl opacity-40 blur-xl transform translate-y-4"></div>
               <div className="relative bg-white p-8 rounded-2xl border border-slate-100 shadow-xl">
                 <div className="grid grid-cols-1 gap-6">
-                  {/* 恢复图标的彩色背景，但更淡雅 */}
                   {[
                     {
                       icon: BookOpen,
@@ -550,7 +556,6 @@ export default function App() {
                 key={i}
                 className="flex flex-col h-full bg-white p-8 rounded-2xl border border-slate-200 hover:border-sky-300 transition-all hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group"
               >
-                {/* 恢复彩色背景球，但淡化 */}
                 <div
                   className={`absolute top-0 right-0 w-32 h-32 ${card.bg} rounded-full blur-3xl -mr-10 -mt-10 transition-opacity opacity-60 group-hover:opacity-100`}
                 ></div>
@@ -619,7 +624,6 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-left max-w-2xl mx-auto mb-10">
               {text.mission.list.map((item, index) => (
                 <div key={index} className="flex items-start">
-                  {/* 彩色对勾 */}
                   <div className="mt-1 mr-3 flex-shrink-0 text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-pink-500 font-bold">
                     ✓
                   </div>
@@ -648,12 +652,11 @@ export default function App() {
         </div>
       </section>
 
-      {/* SECTION 07: WHAT WE DO (居中优化版) */}
+      {/* SECTION 07: WHAT WE DO */}
       <section
         id="services"
         className="py-24 bg-slate-50 relative overflow-hidden"
       >
-        {/* 背景装饰：极淡的几何图形 */}
         <div className="absolute left-0 top-1/4 w-64 h-64 bg-sky-100/40 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -710,10 +713,8 @@ export default function App() {
                 key={idx}
                 className="relative p-8 bg-white rounded-2xl shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-300 group overflow-hidden hover:-translate-y-2 flex flex-col items-center text-center"
               >
-                {/* 顶部装饰条 */}
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-sky-400 to-blue-600"></div>
 
-                {/* 背景大数字 - 移至右上角作为水印 */}
                 <div className="absolute -right-6 -top-8 text-9xl font-serif font-bold text-slate-50 group-hover:text-sky-50 transition-colors leading-none select-none z-0">
                   {block.id}
                 </div>
@@ -723,7 +724,6 @@ export default function App() {
                     {block.title}
                   </h3>
 
-                  {/* 中央装饰短线 */}
                   <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6 group-hover:bg-sky-400 transition-all duration-500 group-hover:w-20"></div>
 
                   <ul className="space-y-3">
@@ -749,7 +749,6 @@ export default function App() {
         className="py-24 bg-white relative border-t border-slate-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
               Global Ecosystem & Partnerships
@@ -759,7 +758,6 @@ export default function App() {
             </p>
           </div>
 
-          {/* PART 1: PARTNERS GRID (恢复彩色图标) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
             {[
               {
@@ -823,7 +821,6 @@ export default function App() {
 
           {/* PART 3: JOIN THE ECOSYSTEM */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24 items-center">
-            {/* Left Column: Roles */}
             <div>
               <div className="mb-8">
                 <h3 className="text-3xl font-bold text-slate-900 mb-4">
@@ -863,7 +860,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right Column: Form */}
             <div className="relative">
               <div className="relative bg-white p-8 md:p-10 rounded-2xl border border-slate-200 shadow-2xl h-full flex flex-col justify-center">
                 <h3 className="text-2xl font-bold text-slate-900 mb-6">
@@ -931,61 +927,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* SECTION 08: FOUNDER MESSAGE - 改为浅色 */}
-      {/* <section className="py-24 bg-sky-50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="w-full md:w-1/3 flex flex-col items-center md:items-start text-center md:text-left">
-              <div className="w-24 h-24 bg-linear-to-br from-sky-400 to-pink-500 p-0.5 rounded-full mb-6 shadow-md">
-                <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
-                  <Activity className="text-sky-600 w-10 h-10" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-1">
-                Henry Xu
-              </h3>
-              <p className="text-sky-600 font-medium mb-4">
-                Founder, Real Value Institute
-              </p>
-              <div className="inline-block px-3 py-1 bg-white rounded-full border border-sky-100 shadow-sm">
-                <p className="text-xs text-slate-500 tracking-wide uppercase">
-                  RWA Strategy & Ecosystem Builder
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full md:w-2/3 relative">
-              <div className="absolute -top-6 -left-6 text-6xl text-sky-200 font-serif">
-                “
-              </div>
-              <blockquote className="text-lg md:text-xl text-slate-600 leading-relaxed space-y-6 relative z-10">
-                <p>
-                  "Australia holds some of the world’s most stable, transparent
-                  and high-quality assets, and they deserve global visibility."
-                </p>
-                <p>
-                  "Our mission is{" "}
-                  <span className="text-slate-900 font-semibold">
-                    not speculation
-                  </span>{" "}
-                  but long-term, standards-based, regulatory-aligned industry
-                  development."
-                </p>
-                <p>
-                  "RVI is here to help build a{" "}
-                  <span className="text-sky-600 font-semibold">
-                    healthier, more transparent and trusted
-                  </span>{" "}
-                  global RWA ecosystem."
-                </p>
-              </blockquote>
-            </div>
-          </div>
-        </div>
-      </section> */}
-
-      {/* FOOTER - 改为浅色 */}
+      {/* FOOTER */}
       <footer className="bg-slate-50 pt-12 pb-12 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start gap-8">
@@ -1025,7 +967,6 @@ export default function App() {
 
             <div className="flex flex-col md:items-end gap-6">
               <div className="flex gap-4">
-                {/* Social Icons - 浅色背景 */}
                 <a
                   href="#"
                   className="p-2 bg-slate-50 border border-slate-200 rounded-full hover:bg-sky-500 hover:border-sky-500 hover:text-white transition-all text-slate-500"
